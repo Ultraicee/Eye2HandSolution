@@ -3,7 +3,13 @@ import numpy as np
 import scipy.io as io
 
 
-def kabsch(p, q):
+def kabsch(q, p):
+    """
+    Description: 坐标系q到p的旋转矩阵R和平移向量t
+    :param q: src coordinate system
+    :param p: target coordinate system
+    :return:  Rt_{q2p}
+    """
     # P和q是两个点集的坐标。
     # p和q应该是尺寸（N，3）的二维数组，其中N是点数。
     # 每个数组的3列应分别包含每个点的x、y和z坐标。
