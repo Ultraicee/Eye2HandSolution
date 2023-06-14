@@ -1,9 +1,16 @@
 import math
 import numpy as np
 import scipy.io as io
+import yaml
 
 
-def kabsch(p, q):
+def kabsch(q, p):
+    """
+    Description: 坐标系q到p的旋转矩阵R和平移向量t
+    :param q: src coordinate system
+    :param p: target coordinate system
+    :return:  Rt_{q2p}
+    """
     # P和q是两个点集的坐标。
     # p和q应该是尺寸（N，3）的二维数组，其中N是点数。
     # 每个数组的3列应分别包含每个点的x、y和z坐标。
@@ -102,3 +109,33 @@ def pose2T(pose):
     t_e2b = np.array([Px, Py, Pz]).reshape(3, 1)  # 末端位姿相对基坐标原点的平移
     T_e2b = Rt2T(R_e2b.T, t_e2b)
     return T_e2b
+
+
+def T2pose(T):
+    """
+
+    :param T:
+    :return: pose [Px, Py, Pz, Rx, Ry, Rz]
+    """
+    R = T[:3, :3]
+    t = T[:3, 3]
+    angles = dcm2angle(R)
+    angles %= 2 * np.pi
+    angles[0] = angles[0] - 2 * np.pi if angles[0] > np.pi else angles[0]
+    angles[1] = angles[1] - 2 * np.pi if angles[1] > np.pi else angles[1]
+    angles[2] = angles[2] - 2 * np.pi if angles[2] > np.pi else angles[2]
+    pose = np.hstack((t, angles[::-1]))
+    return pose
+
+
+def saveToYaml(mat, file_name):
+    with open(file_name, 'w') as f:
+        yaml.dump(mat.tolist(), f)
+    print("saved {}.".format(file_name))
+
+
+def loadFromYaml(file_name):
+    with open(file_name) as f:
+        loaded = yaml.load(f, Loader=yaml.FullLoader)
+    mat = np.array(loaded)
+    return mat

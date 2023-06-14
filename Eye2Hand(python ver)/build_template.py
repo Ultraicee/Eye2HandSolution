@@ -1,10 +1,7 @@
 import numpy as np
 import math
 import scipy.io as io
-import yaml
 from Utils.utility import kabsch  # 使用kabsch函数计算旋转平移矩阵
-import torch
-import torch.nn as nn
 
 
 def isRotationMatrix(R):
@@ -19,19 +16,6 @@ def isRotationMatrix(R):
     I = np.identity(3, dtype=R.dtype)
     n = np.linalg.norm(I - shouldBeIdentity)
     return n < 1e-6
-
-
-def saveToYaml(mat, file_name):
-    with open(file_name, 'w') as f:
-        yaml.dump(mat.tolist(), f)
-
-
-def loadFromYaml(file_name):
-    with open(file_name) as f:
-        loaded = yaml.load(f, Loader=yaml.FullLoader)
-    mat = np.array(loaded)
-    print("read matrix: \n", mat)
-    return mat
 
 
 def rotationMatrixToEulerAngles(R):

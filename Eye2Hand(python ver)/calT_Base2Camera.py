@@ -17,7 +17,7 @@ def calR(Ps_cam):
     r_2 = cal_rot_vec(Ps_cam[8:12, :].T, Ps_cam[12:16, :].T)
     # z axis motion
     r_3 = cal_rot_vec(Ps_cam[16:20, :].T, Ps_cam[20:24, :].T)
-    R_B2C_init, _ = kabsch(np.eye(3), np.array([r_1, r_2, r_3]).T)  # shape=NX3
+    R_B2C_init, _ = kabsch(np.eye(3), np.array([r_1, r_2, r_3]))
     return R_B2C_init
 
 
@@ -45,15 +45,15 @@ if __name__ == '__main__':
     ps_opt = data_dict['P_C_N']  # 用于求优T_B2C的标识球数据
     pose_arm = data_dict['pose_arm_N']  # 用于求优T_B2C的机械臂位姿数据
     template_data = ps_opt[:4, :]  # 取第一组数据初始化模板
-    if temp_opt is None:
-        temp_opt = template()  # 实例化模板
-        temp_opt.setInitTemp(template_data)  # 设置初始模板，不存在就自动创建
-        M = max(template_data.shape)
-        measure_data3d = np.zeros((ps_opt.shape[0] // M, 3, M))
-        for i in range(measure_data3d.shape[0]):
-            measure_data3d[i] = ps_opt[M * i:M * (i + 1)].T
-        temp_opt.optTemp(measure3d=measure_data3d)
-        print(temp_opt.getTemp())
+    # if temp_opt is None:
+    #     temp_opt = template()  # 实例化模板
+    #     temp_opt.setInitTemp(template_data)  # 设置初始模板，不存在就自动创建
+    #     M = max(template_data.shape)
+    #     measure_data3d = np.zeros((ps_opt.shape[0] // M, 3, M))
+    #     for i in range(measure_data3d.shape[0]):
+    #         measure_data3d[i] = ps_opt[M * i:M * (i + 1)].T
+    #     temp_opt.optTemp(measure3d=measure_data3d)
+    #     print(temp_opt.getTemp())
 
     # 求解R_B2C_init
     R_B2C_init = calR(ps_single_axis[4:, :])
@@ -75,17 +75,15 @@ if __name__ == '__main__':
         delta_err = R_B2C_init @ R_A - R_B @ R_B2C_init
         err = np.linalg.norm(delta_err) / math.sqrt(3 * 3)
     B_N = T_C2C
-    # TODO:完成优化过程
-    # # 求优T_B2C
-    # angles = dcm2angle(R_B2C_init)
-    # para0 = np.hstack((angles, t_B2C_init))
-    # res = minimize(cost_func, para0, method='SLSQP', args=(A_N, B_N),
-    #              options={'maxiter': 3000, 'eps': 0.001, 'ftol': 0.001, 'disp': True})
-    # T = Rt2T(angle2dcm(res.x[:3]), res.x[3:])
-    # print(T)
+    # TODO:完成优化过程,目前rmse=6.132，MATLAB可达到0.31
+    # 求优T_B2C
+    angles = dcm2angle(R_B2C_init)
+    para0 = np.hstack((angles, t_B2C_init))
+    res = minimize(cost_func, para0, method='SLSQP', args=(A_N, B_N),
+                   options={'maxiter': 3000, 'eps': 0.001, 'ftol': 0.0001, 'disp': True})
+    T = Rt2T(angle2dcm(res.x[:3]), res.x[3:])
 
-    T_B2C = np.array([[0.4857, 0.8731, -0.0418, -226.1417],
-                      [0.2429, -0.1807, -0.9531, 120.1081],
-                      [-0.8397, 0.4528, -0.2999, 906.8772],
-                      [0, 0, 0, 1.0000]])  # MATLAB求解结果
-
+    # T_B2C = np.array([[0.4857, 0.8731, -0.0418, -226.1417],
+    #                   [0.2429, -0.1807, -0.9531, 120.1081],
+    #                   [-0.8397, 0.4528, -0.2999, 906.8772],
+    #                   [0, 0, 0, 1.0000]])  # MATLAB求解结果
