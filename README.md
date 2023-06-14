@@ -20,10 +20,10 @@
 matlab版本使用fmincon求优工具箱实现了`T_B2C`的求优，python使用SciPy求优库的minimize函数求优（目前效果不佳，待改进）
 
 python版本的`main.py`完成了：
-1）接收相机定位数据
-2）可选自动更新`T_E2o`
-2）计算设定目标位置所需的机械臂参数[Px,Py,Pz,Rx,Ry,Rz]
-3）控制机械臂运动并计算运动误差rmse(target, end)
+- 接收相机定位数据
+- 可选自动更新`T_E2o`
+- 计算设定目标位置所需的机械臂参数arm pose=[Px,Py,Pz,Rx,Ry,Rz]
+- 控制机械臂运动并计算运动误差rmse(target, end)
 
 ### 3. TODO
 
