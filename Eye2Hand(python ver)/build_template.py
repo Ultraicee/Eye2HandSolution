@@ -1,7 +1,7 @@
 import numpy as np
 import math
 import scipy.io as io
-from Utils.utility import kabsch  # 使用kabsch函数计算旋转平移矩阵
+from Utils.utility import kabsch, saveToYaml, loadFromYaml  # 使用kabsch函数计算旋转平移矩阵
 
 
 def isRotationMatrix(R):
@@ -563,8 +563,8 @@ class template:
 if __name__ == '__main__':
 
     # 加载.mat数据
-    measure_data = io.loadmat('../measure0506.mat')['measure3d']  # (MxN)x3
-    template_data = loadFromYaml('temp.yaml')  # 3xM
+    measure_data = io.loadmat('Ps_50_for_temp_opt.mat')['Ps50']  # (MxN)x3
+    template_data = measure_data[:4, :]
     temp = template()  # 实例化模板
     temp.setInitTemp(template_data)  # 设置初始模板，不存在就自动创建
     M = max(template_data.shape)

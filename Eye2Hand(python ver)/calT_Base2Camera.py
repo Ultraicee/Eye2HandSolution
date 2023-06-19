@@ -22,7 +22,7 @@ def calR(Ps_cam):
 
 
 def cost_func(para, A, B):
-    R_B2C = angle2dcm(para[:3])
+    R_B2C = angle2dcm(para[2::-1])
     t_B2C = para[3:].reshape(3, 1)
     T_B2C = Rt2T(R_B2C, t_B2C)
     N = A.shape[-1]
@@ -78,12 +78,12 @@ if __name__ == '__main__':
     # TODO:完成优化过程,目前rmse=6.132，MATLAB可达到0.31
     # 求优T_B2C
     angles = dcm2angle(R_B2C_init)
-    para0 = np.hstack((angles, t_B2C_init))
+    para0 = np.hstack((angles[::-1], t_B2C_init))
     res = minimize(cost_func, para0, method='SLSQP', args=(A_N, B_N),
                    options={'maxiter': 3000, 'eps': 0.001, 'ftol': 0.0001, 'disp': True})
-    T = Rt2T(angle2dcm(res.x[:3]), res.x[3:])
+    T = Rt2T(angle2dcm(res.x[2:0:-1]), res.x[3:])
 
-    # T_B2C = np.array([[0.4857, 0.8731, -0.0418, -226.1417],
-    #                   [0.2429, -0.1807, -0.9531, 120.1081],
-    #                   [-0.8397, 0.4528, -0.2999, 906.8772],
+    # T_B2C = np.array([[0.4857, 0.8731, -0.0418, -226.1409],
+    #                   [0.2429, -0.1807, -0.9531, 120.1083],
+    #                   [-0.8397, 0.4528, -0.2999, 906.8779],
     #                   [0, 0, 0, 1.0000]])  # MATLAB求解结果

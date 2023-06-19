@@ -47,21 +47,25 @@ def cal_rot_vec(Px_1, Px_2):
 
 def angle2dcm(eularAngle):
     """
-    欧拉角转旋转矩阵
-    :param eularAngle: 欧拉角
-    :return: 旋转矩阵
+
+    Args:
+        eularAngle: 按[Rz,Ry,Rx]顺序输入，单位为弧度
+
+    Returns:
+        旋转矩阵R，被动旋转，转置后可用于左乘点完成变换，即R.T@P
+
     """
-    alpha, beta, gamma = eularAngle[0], eularAngle[1], eularAngle[2]
+    rz, ry, rx = eularAngle[0], eularAngle[1], eularAngle[2]
     R = np.zeros((3, 3))
-    R[0, 0] = math.cos(alpha) * math.cos(beta)
-    R[0, 1] = math.cos(beta) * math.sin(alpha)
-    R[0, 2] = -math.sin(beta)
-    R[1, 0] = math.sin(gamma) * math.sin(beta) * math.cos(alpha) - math.cos(gamma) * math.sin(alpha)
-    R[1, 1] = math.sin(gamma) * math.sin(beta) * math.sin(alpha) + math.cos(gamma) * math.cos(alpha)
-    R[1, 2] = math.sin(gamma) * math.cos(beta)
-    R[2, 0] = math.cos(gamma) * math.sin(beta) * math.cos(alpha) + math.sin(gamma) * math.sin(alpha)
-    R[2, 1] = math.cos(gamma) * math.sin(beta) * math.sin(alpha) - math.sin(gamma) * math.cos(alpha)
-    R[2, 2] = math.cos(gamma) * math.cos(beta)
+    R[0, 0] = math.cos(ry) * math.cos(rz)
+    R[0, 1] = math.cos(ry) * math.sin(rz)
+    R[0, 2] = -math.sin(ry)
+    R[1, 0] = math.sin(rx) * math.sin(ry) * math.cos(rz) - math.cos(rx) * math.sin(rz)
+    R[1, 1] = math.sin(rx) * math.sin(ry) * math.sin(rz) + math.cos(rx) * math.cos(rz)
+    R[1, 2] = math.sin(rx) * math.cos(ry)
+    R[2, 0] = math.cos(rx) * math.sin(ry) * math.cos(rz) + math.sin(rx) * math.sin(rz)
+    R[2, 1] = math.cos(rx) * math.sin(ry) * math.sin(rz) - math.sin(rx) * math.cos(rz)
+    R[2, 2] = math.cos(rx) * math.cos(ry)
 
     return R
 
@@ -69,9 +73,9 @@ def angle2dcm(eularAngle):
 def dcm2angle(R):
     """
     description:
-        将旋转矩阵转换成欧拉角（弧度），除了排列顺序之外（x和z的顺序），结果和matlab的一致
+        将旋转矩阵转为欧拉角（弧度）
     :param R: 旋转矩阵
-    :return:角度值 - r1~r3，分别对应pitch、yall、roll
+    :return:角度值 - r1~r3，分别对应Rz,Ry,Rx
     """
 
     r1 = math.atan2(R[0, 1], R[0, 0])
@@ -97,17 +101,19 @@ def data_load(mat_file_path, keyword_list):
 
 def pose2T(pose):
     """
-    description:
-        读取机械臂参数，返回末端坐标系到基坐标系的变换关系T_E2B
-    :param pose: 机械臂参数
-    :return: 末端坐标系到基坐标系的变换关系T_E2B
+    读取机械臂参数，返回末端坐标系到基坐标系的变换关系T_E2B
+    Args:
+        pose: 机械臂参数
+
+    Returns:
+    末端坐标系到基坐标系的变换关系T_E2B
     """
     Px = pose[0]
     Py = pose[1]
     Pz = pose[2]
-    R_e2b = angle2dcm(pose[-1:-4:-1])
+    R_b2e = angle2dcm(pose[-1:-4:-1])
     t_e2b = np.array([Px, Py, Pz]).reshape(3, 1)  # 末端位姿相对基坐标原点的平移
-    T_e2b = Rt2T(R_e2b.T, t_e2b)
+    T_e2b = Rt2T(R_b2e.T, t_e2b)
     return T_e2b
 
 
@@ -121,9 +127,9 @@ def T2pose(T):
     t = T[:3, 3]
     angles = dcm2angle(R)
     angles %= 2 * np.pi
-    angles[0] = angles[0] - 2 * np.pi if angles[0] > np.pi else angles[0]
-    angles[1] = angles[1] - 2 * np.pi if angles[1] > np.pi else angles[1]
-    angles[2] = angles[2] - 2 * np.pi if angles[2] > np.pi else angles[2]
+    angles[0] = angles[0] - 2 * np.pi if angles[0] > np.pi else angles[0]  # Rz
+    angles[1] = angles[1] - 2 * np.pi if angles[1] > np.pi else angles[1]  # Ry
+    angles[2] = angles[2] - 2 * np.pi if angles[2] > np.pi else angles[2]  # Rx
     pose = np.hstack((t, angles[::-1]))
     return pose
 
@@ -139,3 +145,9 @@ def loadFromYaml(file_name):
         loaded = yaml.load(f, Loader=yaml.FullLoader)
     mat = np.array(loaded)
     return mat
+
+
+if __name__ == "__main__":
+    angles = np.array([-2.3400, 0.3295, 2.9891])
+    rot = angle2dcm(angles)
+    print(dcm2angle(rot))
