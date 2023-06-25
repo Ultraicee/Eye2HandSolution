@@ -25,10 +25,20 @@ python版本的`main.py`完成了：
 - 计算设定目标位置所需的机械臂参数arm pose=[Px,Py,Pz,Rx,Ry,Rz]
 - 控制机械臂运动并计算运动误差rmse(target, end)
 
-### 3. TODO
+### 3. Usage
 
-- 完成python版本的求优环节；
+S1: 使用`Eye2Hand(python ver)/auto_collect_proc.py`完成数据采集（单轴移动和自由采集N组），实际上单轴移动采集的数据也可用于求优`T_B2C`，但相同数据既提供初值又完成求优效果会差一些；
+S2: 将导出的`Pc_single_axis.mat`和`P_C_N_and_arm_pose_N.mat`导入MATLAB，在`Eye2Hand(matlab ver)/calRT_CAM2BASE_v2.m`求解`T_B2C`；
+S3: 手动更新`T_B2C_opt.yaml`文件；
+### 4. TODO
+
+- 完成python版本的求优环节，避免用MATLAB折中处理；
 
 - 优化手眼协同；
 
+<<<<<<< Updated upstream
 - test
+=======
+### 5. Note
+在求解t_B2C时，使用被动标识球靠近机械臂底座，此时读取到的相机坐标系下坐标值接近t_B2C!!!
+>>>>>>> Stashed changes

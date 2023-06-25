@@ -111,6 +111,15 @@ def camera_msg(ip, port=8765):
 
 
 def bytes2Mat(data_bytes, idx=2):
+    """
+    根据PS_For_IR的传输方式(特殊字符分割，第3个为检测空间点数据)特定写法
+    Args:
+        data_bytes: bytes, TCP传输的数据
+        idx: int, 数据在结构体中索引
+
+    Returns: ndarray, 点数据
+
+    """
     data_temp_cam = data_bytes.split(b'\n\n')[idx]
     data_p = data_temp_cam.split(b'\n')
     N = len(data_p)
@@ -178,18 +187,18 @@ def collet_N_move(sock_elite):
     io.savemat('P_C_N_and_arm_pose_N.mat', {'P_C_N': P_C_N, 'arm_pose_N': arm_pose_N})
 
 
-def move(sock_elite, arm_pose_target):
+def move(sock_elite, arm_pose_dst):
     """
     控制机械臂运动到目标位姿
     Args:
         sock_elite:
-        arm_pose_target:机械臂目标姿态
+        arm_pose_dst:机械臂目标姿态
 
     Returns:
 
     """
     # X axis Add
-    suc, ik_move_result, id = sendCMD(sock_elite, "inverseKinematic", {"targetPose": arm_pose_target})
+    suc, ik_move_result, id = sendCMD(sock_elite, "inverseKinematic", {"targetPose": arm_pose_dst})
     assert ik_move_result is not None
     # print("ik_target_result:", ik_target_result)
     sendCMD(sock_elite, "moveByJoint", {"targetPos": ik_move_result, "speed": 30})
@@ -203,7 +212,7 @@ def move(sock_elite, arm_pose_target):
     camera_msg(camera_ip)  # 清空缓存
     time.sleep(1)
     suc, arm_pose_end, id = sendCMD(sock_elite, "getRobotPose")
-    if np.linalg.norm(np.array(arm_pose_end) - np.array(arm_pose_target)) < 10:
+    if np.linalg.norm(np.array(arm_pose_end) - np.array(arm_pose_dst)) < 10:
         ps_end = camera_msg(camera_ip)
         return ps_end
     else:
@@ -216,8 +225,11 @@ if __name__ == "__main__":
     conSuc, sock_elite = connectETController(robot_ip, port=8055)
     print("connect status:", conSuc)
     prepare_work(sock_elite)
-    # 机械臂单轴移动并采集数据
+    # 反注释指定模块启用功能
+    """ 机械臂单轴移动并采集数据 """
     # single_axis_move(sock_elite)
-    # 手动控制机械臂位姿并确认收集
-    collet_N_move(sock_elite)
+
+    """ 手动控制机械臂位姿并确认收集 """
+    # collet_N_move(sock_elite)
+
     print("Done!")
