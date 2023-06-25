@@ -32,6 +32,8 @@ S1: 使用`Eye2Hand(python ver)/auto_collect_proc.py`完成数据采集（单轴
 S2: 将导出的`Pc_single_axis.mat`和`P_C_N_and_arm_pose_N.mat`导入MATLAB，在`Eye2Hand(matlab ver)/calRT_CAM2BASE_v2.m`求解`T_B2C`；
 
 S3: 手动更新`T_B2C_opt.yaml`文件；
+
+S4: 使用`Eye2Hand(python ver)/main.py`完成手眼协同控制测试；
 ### 4. TODO
 
 - 完成python版本的求优环节，避免用MATLAB折中处理；
